@@ -18,6 +18,7 @@ HGhub 客户端下载：<https://github.com/Minireel/HGhub/releases>
 | `zhuiying.source` 追影 | 首页 / 分类 / 搜索 / 详情 / 播放 | |
 | `kxyy.source` 开心影院 | 首页 / 分类 / 搜索 / 详情 / 播放 | 部分线路仅 App 可播，插件已标注 |
 | `dhvideo.source` 豆花电影网 | 首页 / 分类 / 搜索 / 详情 / 播放 | 首集可能要等 3 MB 播放页，之后走缓存 |
+| `appmovie.source` APP影院 | 首页 / 分类 / 搜索 / 详情 / 播放 | |
 
 ```
 manifest/manifest.json      插件列表，订阅入口
@@ -33,6 +34,7 @@ plugins/jisu.source.js      单文件插件
 plugins/zhuiying.source.js  单文件插件
 plugins/kxyy.source.js      单文件插件
 plugins/dhvideo.source.js   单文件插件
+plugins/appmovie.source.js  单文件插件
 ```
 
 ## 订阅
