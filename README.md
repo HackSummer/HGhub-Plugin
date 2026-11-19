@@ -2,6 +2,8 @@
 
 HGhub 插件集（HPP 1.0，单文件数据源）。
 
+HGhub 客户端下载：<https://github.com/Minireel/HGhub/releases>
+
 | 插件 | 能力 | 备注 |
 | --- | --- | --- |
 | `bfzy.source` 暴风资源 | 首页 / 分类 / 搜索 / 详情 / 播放 | |
@@ -9,6 +11,7 @@ HGhub 插件集（HPP 1.0，单文件数据源）。
 | `av321.source` 321AV | 首页 / 分类 / 搜索 / 详情 / 播放 | 成人内容，需在设置里开启 |
 | `hanime16.source` H動漫 hanime16 | 首页 / 分类 / 搜索 / 详情 / 播放 | 成人内容，需在设置里开启 |
 | `ck69.source` 黄色仓库 | 首页 / 分类 / 搜索 / 详情 / 播放 | 成人内容，需在设置里开启 |
+| `juzong.source` 剧踪影院 | 首页 / 分类 / 搜索 / 详情 / 播放 | |
 
 ```
 manifest/manifest.json      插件列表，订阅入口
@@ -17,6 +20,7 @@ plugins/tangxin.vlog.js     单文件插件
 plugins/av321.source.js     单文件插件
 plugins/hanime16.source.js  单文件插件
 plugins/ck69.source.js      单文件插件
+plugins/juzong.source.js    单文件插件
 ```
 
 ## 订阅
