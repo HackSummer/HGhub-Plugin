@@ -1,7 +1,7 @@
 export const meta = {
   id: 'hanime16.source',
   name: 'H動漫 hanime16',
-  version: '1.0.0',
+  version: '1.0.1',
   protocol: 1,
   kind: 'source',
   description: 'hanime16 数据源：首页分区、类型与排序、搜索、详情，直连 1080P/720P/480P。',
@@ -32,21 +32,47 @@ function durationSec(text) {
 
 function cardsOf(root) {
   const out = [];
+  const seen = new Set();
+  const push = item => {
+    if (!item || seen.has(item.id)) return;
+    seen.add(item.id);
+    out.push(item);
+  };
+
+  // A 型：首页行、排序页 —— div.video-item-container 内含 a.video-link
   for (const node of root.select('div.video-item-container')) {
     const link = node.first('a.video-link') || node.first('a');
-    const href = norm(link && link.attr('href'));
-    const id = (href.match(/[?&]v=(\d+)/) || [])[1];
+    const id = (norm(link && link.attr('href')).match(/[?&]v=(\d+)/) || [])[1];
     if (!id) continue;
     const img = node.first('img.main-thumb') || node.first('img');
+    const item = {
+      id,
+      title: norm(node.attr('title')) || norm(node.first('div.title') && node.first('div.title').text()),
+      type: 'anime',
+    };
     const cover = norm(img && (img.attr('src') || img.attr('data-src')));
-    const title = norm(node.attr('title')) || norm(node.first('div.title') && node.first('div.title').text());
-    const item = { id, title, type: 'anime' };
     if (cover) item.cover = cover;
-    const dur = node.first('div.duration');
-    const sec = dur && durationSec(dur.text());
+    const sec = durationSec(norm(node.first('div.duration') && node.first('div.duration').text()));
     if (sec) item.durationSec = sec;
-    out.push(item);
+    push(item);
   }
+
+  // B 型：类型页、搜索页 —— 外层 a 包着 div.home-rows-videos-div，标题在 .home-rows-videos-title
+  for (const node of root.select('div.home-rows-videos-div')) {
+    const anchor = node.parent();
+    const id = (norm(anchor && anchor.attr('href')).match(/[?&]v=(\d+)/) || [])[1];
+    if (!id) continue;
+    const img = node.first('img');
+    const item = {
+      id,
+      title: norm(node.first('div.home-rows-videos-title') && node.first('div.home-rows-videos-title').text()),
+      type: 'anime',
+    };
+    const cover = norm(img && (img.attr('src') || img.attr('data-src')));
+    if (cover) item.cover = cover;
+    push(item);
+  }
+
   return out;
 }
 
@@ -104,13 +130,25 @@ export default hg => {
       },
 
       async list(params, ctx) {
-        const raw = norm(params.categoryId);
-        const sep = raw.indexOf(':');
-        if (sep < 1) throw new hg.PluginError('INVALID_ARGUMENT', '分类 ID 不合法');
-        const kind = raw.slice(0, sep);
-        const value = raw.slice(sep + 1);
+        // 宿主点父分类时会直接传 'sort' / 'genre'，这两种要落到各自的第一个子项
+        const raw = norm(params.categoryId).trim();
+        let key;
+        let value;
+        if (raw === 'sort') {
+          key = 'sort';
+          value = SORTS[0].value;
+        } else if (raw === 'genre') {
+          key = 'genre';
+          value = GENRES[0];
+        } else {
+          const sep = raw.indexOf(':');
+          if (sep < 1) throw new hg.PluginError('INVALID_ARGUMENT', '分类 ID 不合法');
+          const kind = raw.slice(0, sep);
+          key = kind === 's' ? 'sort' : kind === 'g' ? 'genre' : '';
+          value = raw.slice(sep + 1);
+          if (!key || !value) throw new hg.PluginError('INVALID_ARGUMENT', '分类 ID 不合法');
+        }
         const want = pageNo(params.cursor);
-        const key = kind === 's' ? 'sort' : 'genre';
         const doc = await fetchDoc(`/search?${key}=${encodeURIComponent(value)}&page=${want}`, ctx, 300);
         const items = cardsOf(doc);
         const out = { items };
