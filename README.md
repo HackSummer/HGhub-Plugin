@@ -6,12 +6,17 @@ HGhub 插件集（HPP 1.0，单文件数据源）。
 | --- | --- |
 | `bfzy.source` 暴风资源 | 首页 / 分类 / 搜索 / 详情 / 播放 |
 
+```
+manifest/manifest.json      插件列表，订阅入口
+plugins/bfzy.source.js      单文件插件
+```
+
 ## 订阅
 
 在 HGhub 里导入下面这个地址即可，它是一份插件列表：
 
 ```
-https://raw.githubusercontent.com/poisonhs/HGhub-Plugin/main/manifest.json
+https://raw.githubusercontent.com/poisonhs/HGhub-Plugin/main/manifest/manifest.json
 ```
 
 1. 打开 HGhub，进入 **插件中心 → 导入与订阅**（手机端从「我的」进插件中心）。
@@ -27,7 +32,7 @@ https://raw.githubusercontent.com/poisonhs/HGhub-Plugin/main/manifest.json
 只想装这一个插件，可以直接粘插件文件的地址：
 
 ```
-https://raw.githubusercontent.com/poisonhs/HGhub-Plugin/main/bfzy.source.js
+https://raw.githubusercontent.com/poisonhs/HGhub-Plugin/main/plugins/bfzy.source.js
 ```
 
 或把文件内容整段贴进导入框，效果相同。
@@ -35,5 +40,5 @@ https://raw.githubusercontent.com/poisonhs/HGhub-Plugin/main/bfzy.source.js
 ## 说明
 
 - 不需要账号，不读写片库以外的数据，插件只在被调用时运行。
-- 数据与播放地址来自上游采集接口，站点换域名或改接口会导致插件失效；换地址时改 `bfzy.source.js` 顶部的 `API` 常量。
+- 数据与播放地址来自上游采集接口，站点换域名或改接口会导致插件失效；换地址时改 `plugins/bfzy.source.js` 顶部的 `API` 常量。
 - 流地址有时效，播放中途失效时宿主会带 `reason: "refresh"` 重新调用插件解析。

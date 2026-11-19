@@ -7,7 +7,7 @@
       "name": "暴风资源",
       "version": "1.0.0",
       "description": "暴风资源采集接口：搜索、分类、详情、m3u8 直连",
-      "url": "bfzy.source.js"
+      "url": "../plugins/bfzy.source.js"
     }
   ]
 }
