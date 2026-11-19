@@ -57,6 +57,13 @@
       "version": "1.0.0",
       "description": "橙果短剧（chengguodj.com）：首页分区、五个频道分页、搜索、详情与 HLS 直连；接口走 AES+签名，插件内自解",
       "url": "../plugins/chengguo.source.js"
+    },
+    {
+      "id": "jisu.source",
+      "name": "极速追剧",
+      "version": "1.0.0",
+      "description": "极速追剧（jisuzhuiju.com）：首页五个分区、五个频道分页、搜索、详情与多线路 HLS 直连",
+      "url": "../plugins/jisu.source.js"
     }
   ]
 }

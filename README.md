@@ -14,6 +14,7 @@ HGhub 客户端下载：<https://github.com/Minireel/HGhub/releases>
 | `juzong.source` 剧踪影院 | 首页 / 分类 / 搜索 / 详情 / 播放 | |
 | `hlws.source` 51黑料 | 首页 / 分类 / 搜索 / 详情 / 播放 | 成人内容，需在设置里开启 |
 | `chengguo.source` 橙果短剧 | 首页 / 频道 / 搜索 / 详情 / 播放 | 成人内容，需在设置里开启 |
+| `jisu.source` 极速追剧 | 首页 / 分类 / 搜索 / 详情 / 播放 | |
 
 ```
 manifest/manifest.json      插件列表，订阅入口
@@ -25,6 +26,7 @@ plugins/ck69.source.js      单文件插件
 plugins/juzong.source.js    单文件插件
 plugins/hlws.source.js      单文件插件
 plugins/chengguo.source.js  单文件插件
+plugins/jisu.source.js      单文件插件
 ```
 
 ## 订阅
