@@ -92,6 +92,13 @@
       "version": "1.0.0",
       "description": "APP影院（appmovie.art）：首页四个热映分区、八个频道分页、搜索、详情与多线路 m3u8 直连",
       "url": "../plugins/appmovie.source.js"
+    },
+    {
+      "id": "auete.source",
+      "name": "Auete影视",
+      "version": "1.0.0",
+      "description": "Auete影视网（aeete.com）：首页五组热映分区、九个频道分页、详情多线路；播放地址 base64 内联，取流失败自动换线路。站内搜索需图形验证码，故不提供搜索",
+      "url": "../plugins/auete.source.js"
     }
   ]
 }
