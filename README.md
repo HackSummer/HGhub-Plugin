@@ -31,16 +31,6 @@ https://raw.githubusercontent.com/poisonhs/HGhub-Plugin/main/manifest/manifest.j
 
 导入后这个地址会存成一条订阅，以后在订阅页点「检查更新」即可拉取新版本，不用重新粘贴。
 
-## 单文件导入
-
-只想装这一个插件，可以直接粘插件文件的地址：
-
-```
-https://raw.githubusercontent.com/poisonhs/HGhub-Plugin/main/plugins/bfzy.source.js
-```
-
-或把文件内容整段贴进导入框，效果相同。
-
 ## 说明
 
 - 不需要账号，不读写片库以外的数据，插件只在被调用时运行。
