@@ -99,6 +99,13 @@
       "version": "1.0.0",
       "description": "Auete影视网（aeete.com）：首页五组热映分区、九个频道分页、详情多线路；播放地址 base64 内联，取流失败自动换线路。站内搜索需图形验证码，故不提供搜索",
       "url": "../plugins/auete.source.js"
+    },
+    {
+      "id": "netflixgc.source",
+      "name": "奈飞工厂",
+      "version": "1.0.0",
+      "description": "奈飞工厂（netflixgc.com）：首页与分类走站内 ds_api/vod 接口（POST 返回 JSON），搜索走 /vodsearch，播放页 player_aaaa 的 encrypt=2 用 base64+unescape 解开就是 m3u8",
+      "url": "../plugins/netflixgc.source.js"
     }
   ]
 }

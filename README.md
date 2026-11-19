@@ -20,6 +20,7 @@ HGhub 客户端下载：<https://github.com/Minireel/HGhub/releases>
 | `dhvideo.source` 豆花电影网 | 首页 / 分类 / 搜索 / 详情 / 播放 | 首集可能要等 3 MB 播放页，之后走缓存 |
 | `appmovie.source` APP影院 | 首页 / 分类 / 搜索 / 详情 / 播放 | |
 | `auete.source` Auete影视 | 首页 / 分类 / 详情 / 播放 | 站内搜索需图形验证码，未提供搜索 |
+| `netflixgc.source` 奈飞工厂 | 首页 / 分类 / 搜索 / 详情 / 播放 | |
 
 ```
 manifest/manifest.json      插件列表，订阅入口
@@ -37,6 +38,7 @@ plugins/kxyy.source.js      单文件插件
 plugins/dhvideo.source.js   单文件插件
 plugins/appmovie.source.js  单文件插件
 plugins/auete.source.js     单文件插件
+plugins/netflixgc.source.js 单文件插件
 ```
 
 ## 订阅
