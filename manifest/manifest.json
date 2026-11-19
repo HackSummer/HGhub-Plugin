@@ -50,6 +50,13 @@
       "version": "1.0.0",
       "description": "51黑料网（51hlws.com）：首页分区、十四分类分页、搜索、详情与 HLS 直连；封面自动切到明文图源",
       "url": "../plugins/hlws.source.js"
+    },
+    {
+      "id": "chengguo.source",
+      "name": "橙果短剧",
+      "version": "1.0.0",
+      "description": "橙果短剧（chengguodj.com）：首页分区、五个频道分页、搜索、详情与 HLS 直连；接口走 AES+签名，插件内自解",
+      "url": "../plugins/chengguo.source.js"
     }
   ]
 }
