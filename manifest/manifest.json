@@ -68,8 +68,8 @@
     {
       "id": "zhuiying.source",
       "name": "追影",
-      "version": "1.0.0",
-      "description": "追影（zhuiying3.cc）：首页九个分区、六个分类、搜索、详情与八线路解析（player_api 的 md5 token 插件内自算）",
+      "version": "1.0.1",
+      "description": "追影（zhuiying3.cc）：首页九个分区、六个分类、搜索、详情与八线路解析；主域异常自动切备用域名",
       "url": "../plugins/zhuiying.source.js"
     }
   ]

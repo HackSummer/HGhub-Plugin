@@ -1,7 +1,7 @@
 export const meta = {
   id: 'zhuiying.source',
   name: '追影',
-  version: '1.0.0',
+  version: '1.0.1',
   protocol: 1,
   kind: 'source',
   description: '追影（zhuiying3.cc）：首页九个分区、六个分类、搜索、详情与多线路解析（player_api 的 md5 token 在插件内自算）。',
@@ -11,6 +11,9 @@ export const meta = {
 };
 
 const SITE = 'https://zhuiying3.cc';
+// 同一套站的备用域名：主域被墙/换线/边缘 404 时自动轮换
+const HOSTS = ['https://zhuiying3.cc', 'https://zhuiying1.cc', 'https://www.zhuiying3.cc'];
+const HOST_KEY = 'zy.host';
 // token = md5(baseKey + ts + UA)，UA 必须与发请求时的一致
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
 
@@ -42,16 +45,51 @@ function mediaTypeOf(label, episodeCount) {
 }
 
 export default hg => {
+  let currentHost = '';
+
+  async function pickHost(ctx) {
+    if (currentHost) return currentHost;
+    const saved = await hg.storage.get(HOST_KEY).catch(() => '');
+    currentHost = HOSTS.indexOf(saved) >= 0 ? saved : HOSTS[0];
+    return currentHost;
+  }
+
   async function fetchText(path, ctx, ttl) {
-    const url = path.startsWith('http') ? path : `${SITE}${path}`;
-    const res = await hg.http.fetch({
-      url,
-      headers: { 'User-Agent': UA, Accept: 'text/html,application/xhtml+xml' },
-      signal: ctx.signal,
-      ...(ttl ? { cache: { ttlSec: ttl, staleIfErrorSec: 3600 } } : {}),
-    });
-    if (!res.ok) throw new hg.PluginError('UPSTREAM_ERROR', `站点返回 ${res.status}`);
-    return res.data;
+    if (path.startsWith('http')) {
+      const res = await hg.http.fetch({ url: path, signal: ctx.signal });
+      if (!res.ok) throw new hg.PluginError('UPSTREAM_ERROR', `站点返回 ${res.status}`);
+      return res.data;
+    }
+    const start = HOSTS.indexOf(await pickHost(ctx));
+    let lastStatus = 0;
+    let lastError = null;
+    for (let i = 0; i < HOSTS.length; i++) {
+      const host = HOSTS[(start + i) % HOSTS.length];
+      let res;
+      try {
+        res = await hg.http.fetch({
+          url: `${host}${path}`,
+          headers: { 'User-Agent': UA, Accept: 'text/html,application/xhtml+xml', Referer: `${host}/` },
+          retry: 1,
+          signal: ctx.signal,
+          ...(ttl ? { cache: { ttlSec: ttl, staleIfErrorSec: 3600 } } : {}),
+        });
+      } catch (error) {
+        lastError = error;
+        continue;
+      }
+      if (res.ok) {
+        if (host !== currentHost) {
+          currentHost = host;
+          hg.storage.set(HOST_KEY, host, { ttlSec: 86400 }).catch(() => {});
+        }
+        return res.data;
+      }
+      lastStatus = res.status;
+      // 403/404/5xx 说明这条线路不适合，换下一个域名
+    }
+    if (lastStatus) throw new hg.PluginError('UPSTREAM_ERROR', `站点返回 ${lastStatus}`);
+    throw lastError || new hg.PluginError('NETWORK', '站点连接失败');
   }
 
   async function fetchDoc(path, ctx, ttl) {
@@ -167,7 +205,15 @@ export default hg => {
       async getDetail(params, ctx) {
         const id = trim(params.id);
         if (!/^[A-Za-z0-9]+$/.test(id)) throw new hg.PluginError('INVALID_ARGUMENT', '作品 ID 不合法');
-        const doc = await fetchDoc(`/video/${id}.html`, ctx, 300);
+        let doc;
+        try {
+          doc = await fetchDoc(`/video/${id}.html`, ctx, 300);
+        } catch (error) {
+          if (error && error.code === 'UPSTREAM_ERROR' && /404/.test(error.message)) {
+            throw new hg.PluginError('NOT_FOUND', '这部片子已经下架');
+          }
+          throw error;
+        }
 
         const h1 = doc.first('h1');
         let title = trim(h1 && h1.text());
@@ -248,7 +294,15 @@ export default hg => {
         const nid = m[2];
         const page = `/play/${id}-${sid}-${nid}.html`;
 
-        const html = await fetchText(page, ctx, 0);
+        let html;
+        try {
+          html = await fetchText(page, ctx, 0);
+        } catch (error) {
+          if (error && error.code === 'UPSTREAM_ERROR' && /404/.test(error.message)) {
+            throw new hg.PluginError('CONTENT_LOCKED', '这一集已经失效，换一集或换线路试试');
+          }
+          throw error;
+        }
         const directUrl = configField(html, 'directUrl');
         let url = '';
         let urltype = '';
@@ -267,14 +321,15 @@ export default hg => {
 
           const ts = Math.floor(Date.now() / 1000);
           const token = hexOf(hg.crypto.digest('md5', baseKey + ts + UA));
+          const host = await pickHost(ctx);
           const res = await hg.http.fetch({
-            url: `${SITE}/player_api.php`,
+            url: `${host}/player_api.php`,
             method: 'POST',
             headers: {
               'User-Agent': UA,
               'Content-Type': 'application/x-www-form-urlencoded',
-              Referer: `${SITE}${page}`,
-              Origin: SITE,
+              Referer: `${host}${page}`,
+              Origin: host,
             },
             body: `url=${encodeURIComponent(requestUrl)}&timestamp=${ts}&token=${token}`,
             signal: ctx.signal,
