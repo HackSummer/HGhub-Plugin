@@ -1,7 +1,7 @@
 export const meta = {
   id: 'zhuiying.source',
   name: '追影',
-  version: '1.0.1',
+  version: '1.0.2',
   protocol: 1,
   kind: 'source',
   description: '追影（zhuiying3.cc）：首页九个分区、六个分类、搜索、详情与多线路解析（player_api 的 md5 token 在插件内自算）。',
@@ -12,7 +12,15 @@ export const meta = {
 
 const SITE = 'https://zhuiying3.cc';
 // 同一套站的备用域名：主域被墙/换线/边缘 404 时自动轮换
-const HOSTS = ['https://zhuiying3.cc', 'https://zhuiying1.cc', 'https://www.zhuiying3.cc'];
+// 六个官方镜像（发布页 www.zhuiying.vip 列的），两批不同机房，哪条通就走哪条
+const HOSTS = [
+  'https://zhuiying3.cc',
+  'https://zhuiying3.com',
+  'https://zhuiying1.cc',
+  'https://zhuiying1.com',
+  'https://zhuiying2.cc',
+  'https://zhuiying2.com',
+];
 const HOST_KEY = 'zy.host';
 // token = md5(baseKey + ts + UA)，UA 必须与发请求时的一致
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
@@ -88,8 +96,11 @@ export default hg => {
       lastStatus = res.status;
       // 403/404/5xx 说明这条线路不适合，换下一个域名
     }
-    if (lastStatus) throw new hg.PluginError('UPSTREAM_ERROR', `站点返回 ${lastStatus}`);
-    throw lastError || new hg.PluginError('NETWORK', '站点连接失败');
+    if (lastStatus) {
+      throw new hg.PluginError('UPSTREAM_ERROR', `${HOSTS.length} 个镜像都返回 ${lastStatus}，可能是当前网络被拦`);
+    }
+    if (lastError) throw lastError;
+    throw new hg.PluginError('NETWORK', `${HOSTS.length} 个镜像都连不上，检查网络或代理`);
   }
 
   async function fetchDoc(path, ctx, ttl) {
