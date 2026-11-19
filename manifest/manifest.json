@@ -64,6 +64,13 @@
       "version": "1.0.0",
       "description": "极速追剧（jisuzhuiju.com）：首页五个分区、五个频道分页、搜索、详情与多线路 HLS 直连",
       "url": "../plugins/jisu.source.js"
+    },
+    {
+      "id": "zhuiying.source",
+      "name": "追影",
+      "version": "1.0.0",
+      "description": "追影（zhuiying3.cc）：首页九个分区、六个分类、搜索、详情与八线路解析（player_api 的 md5 token 插件内自算）",
+      "url": "../plugins/zhuiying.source.js"
     }
   ]
 }
