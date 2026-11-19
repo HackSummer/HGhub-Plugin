@@ -78,6 +78,13 @@
       "version": "1.0.0",
       "description": "开心影院（kxyy1.cc）：四个分类分页、联想接口搜索、详情与多线路 m3u8 直连；JSON 包裹页面自动解包，镜像轮换",
       "url": "../plugins/kxyy.source.js"
+    },
+    {
+      "id": "dhvideo.source",
+      "name": "豆花电影网",
+      "version": "1.0.0",
+      "description": "豆花电影网（dhvideo.cc）：五个频道分页、搜索、多线路详情；播放经 /api/m3u8 跳转 HLS，遇到 sha1 工作量校验插件内自行求解",
+      "url": "../plugins/dhvideo.source.js"
     }
   ]
 }
