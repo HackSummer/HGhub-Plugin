@@ -16,6 +16,7 @@ HGhub 客户端下载：<https://github.com/Minireel/HGhub/releases>
 | `chengguo.source` 橙果短剧 | 首页 / 频道 / 搜索 / 详情 / 播放 | 成人内容，需在设置里开启 |
 | `jisu.source` 极速追剧 | 首页 / 分类 / 搜索 / 详情 / 播放 | |
 | `zhuiying.source` 追影 | 首页 / 分类 / 搜索 / 详情 / 播放 | |
+| `kxyy.source` 开心影院 | 首页 / 分类 / 搜索 / 详情 / 播放 | 部分线路仅 App 可播，插件已标注 |
 
 ```
 manifest/manifest.json      插件列表，订阅入口
@@ -29,6 +30,7 @@ plugins/hlws.source.js      单文件插件
 plugins/chengguo.source.js  单文件插件
 plugins/jisu.source.js      单文件插件
 plugins/zhuiying.source.js  单文件插件
+plugins/kxyy.source.js      单文件插件
 ```
 
 ## 订阅

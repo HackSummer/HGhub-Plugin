@@ -71,6 +71,13 @@
       "version": "1.0.2",
       "description": "追影：首页九个分区、六个分类、搜索、详情与八线路解析；六个官方镜像自动轮换",
       "url": "../plugins/zhuiying.source.js"
+    },
+    {
+      "id": "kxyy.source",
+      "name": "开心影院",
+      "version": "1.0.0",
+      "description": "开心影院（kxyy1.cc）：四个分类分页、联想接口搜索、详情与多线路 m3u8 直连；JSON 包裹页面自动解包，镜像轮换",
+      "url": "../plugins/kxyy.source.js"
     }
   ]
 }
