@@ -29,6 +29,13 @@
       "version": "1.0.1",
       "description": "hanime16：首页分区、类型与排序、搜索、详情，直连 1080P/720P/480P",
       "url": "../plugins/hanime16.source.js"
+    },
+    {
+      "id": "ck69.source",
+      "name": "黄色仓库",
+      "version": "1.0.0",
+      "description": "黄色仓库（69ck1）：首页分区、五个分类、搜索、详情与 m3u8 直连",
+      "url": "../plugins/ck69.source.js"
     }
   ]
 }
