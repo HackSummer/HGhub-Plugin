@@ -12,6 +12,7 @@ HGhub 客户端下载：<https://github.com/Minireel/HGhub/releases>
 | `hanime16.source` H動漫 hanime16 | 首页 / 分类 / 搜索 / 详情 / 播放 | 成人内容，需在设置里开启 |
 | `ck69.source` 黄色仓库 | 首页 / 分类 / 搜索 / 详情 / 播放 | 成人内容，需在设置里开启 |
 | `juzong.source` 剧踪影院 | 首页 / 分类 / 搜索 / 详情 / 播放 | |
+| `hlws.source` 51黑料 | 首页 / 分类 / 搜索 / 详情 / 播放 | 成人内容，需在设置里开启 |
 
 ```
 manifest/manifest.json      插件列表，订阅入口
@@ -21,6 +22,7 @@ plugins/av321.source.js     单文件插件
 plugins/hanime16.source.js  单文件插件
 plugins/ck69.source.js      单文件插件
 plugins/juzong.source.js    单文件插件
+plugins/hlws.source.js      单文件插件
 ```
 
 ## 订阅
@@ -42,6 +44,6 @@ https://raw.githubusercontent.com/poisonhs/HGhub-Plugin/main/manifest/manifest.j
 ## 说明
 
 - 不需要账号，不读写片库以外的数据，插件只在被调用时运行。
-- `tangxin.vlog`、`av321.source`、`hanime16.source` 与 `ck69.source` 声明了 `meta.mature`，宿主默认隐藏，需在设置里允许成人内容后才会出现。
+- `tangxin.vlog`、`av321.source`、`hanime16.source`、`ck69.source` 与 `hlws.source` 声明了 `meta.mature`，宿主默认隐藏，需在设置里允许成人内容后才会出现。
 - 数据与播放地址来自上游采集接口，站点换域名或改接口会导致插件失效；换地址时改 `plugins/bfzy.source.js` 顶部的 `API` 常量。
 - 流地址有时效，播放中途失效时宿主会带 `reason: "refresh"` 重新调用插件解析。

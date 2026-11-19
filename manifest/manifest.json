@@ -43,6 +43,13 @@
       "version": "1.0.0",
       "description": "剧踪影院（juzong01.me）：首页分区、四分类分页、搜索、详情与独家加密线路解析",
       "url": "../plugins/juzong.source.js"
+    },
+    {
+      "id": "hlws.source",
+      "name": "51黑料",
+      "version": "1.0.0",
+      "description": "51黑料网（51hlws.com）：首页分区、十四分类分页、搜索、详情与 HLS 直连；封面自动切到明文图源",
+      "url": "../plugins/hlws.source.js"
     }
   ]
 }
