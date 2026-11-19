@@ -1,7 +1,7 @@
 export const meta = {
   id: 'tangxin.vlog',
   name: '糖心Vlog',
-  version: '1.0.0',
+  version: '1.0.1',
   protocol: 1,
   kind: 'source',
   description: '糖心Vlog 站点数据源：首页分区、演员与标签、全量索引搜索、m3u8 直连播放。',
@@ -44,12 +44,8 @@ function toItem(row) {
 }
 
 // 与站内搜索同一套打分：昵称精确 8、标签精确 6、标题命中 4、昵称/标签包含 3/2、简介兜底 1
-function scoreOf(entry, token) {
-  const [, title, author, tags, , description] = entry;
-  const name = fold(title);
-  const nick = fold(author);
-  const tagList = (tags || []).map(fold);
-  const desc = fold(description);
+function scoreOf(fields, token) {
+  const { name, nick, tags: tagList, desc } = fields;
   let score = 0;
   if (nick === token) score += 8;
   else if (nick.includes(token)) score += 3;
@@ -60,26 +56,27 @@ function scoreOf(entry, token) {
   return score;
 }
 
-function searchIndex(entries, query) {
+function searchAll(rows, normed, query) {
   const words = tokens(query);
   if (!words.length) return [];
   const hits = [];
-  entries.forEach((entry, order) => {
+  for (let i = 0; i < rows.length; i++) {
     let total = 0;
+    let miss = false;
     for (const word of words) {
-      const score = scoreOf(entry, word);
-      if (score === 0) return;
+      const score = scoreOf(normed[i], word);
+      if (score === 0) { miss = true; break; }
       total += score;
     }
-    hits.push({ entry, total, order });
-  });
+    if (miss) continue;
+    hits.push({ row: rows[i], total, order: i });
+  }
   hits.sort((a, b) => b.total - a.total || a.order - b.order);
-  return hits.map(h => h.entry);
+  return hits.map(h => h.row);
 }
 
 export default hg => {
-  let indexPromise = null;
-  let indexAt = 0;
+  let cache = null;
 
   async function fetchIndex(ctx) {
     const res = await hg.http.fetch({
@@ -98,14 +95,33 @@ export default hg => {
     return data;
   }
 
+  // 归一化字段一次构建、分块让出事件循环：单段同步执行有 1 秒预算，两万次 normalize 会撞上限
+  async function buildNormed(rows) {
+    const out = new Array(rows.length);
+    const CHUNK = 600;
+    for (let i = 0; i < rows.length; i += CHUNK) {
+      const end = Math.min(i + CHUNK, rows.length);
+      for (let j = i; j < end; j++) {
+        const row = rows[j];
+        out[j] = { name: fold(row[1]), nick: fold(row[2]), tags: (row[3] || []).map(fold), desc: fold(row[5]) };
+      }
+      if (end < rows.length) await new Promise(resolve => setTimeout(resolve, 0));
+    }
+    return out;
+  }
+
   function index(ctx) {
-    if (indexPromise && Date.now() - indexAt < 600000) return indexPromise;
-    indexAt = Date.now();
-    indexPromise = fetchIndex(ctx).catch(err => {
-      indexPromise = null;
+    if (cache && Date.now() - cache.at < 600000) return cache.data;
+    const at = Date.now();
+    const data = (async () => {
+      const rows = await fetchIndex(ctx);
+      return { rows, normed: await buildNormed(rows) };
+    })().catch(err => {
+      if (cache && cache.at === at) cache = null;
       throw err;
     });
-    return indexPromise;
+    cache = { at, data };
+    return data;
   }
 
   const byId = (entries, id) => entries.find(row => String(row[0]) === id);
@@ -189,7 +205,7 @@ export default hg => {
 
     catalog: {
       async getCategories(params, ctx) {
-        const entries = await index(ctx);
+        const { rows: entries } = await index(ctx);
         return [
           {
             id: 'authors',
@@ -210,11 +226,12 @@ export default hg => {
         if (sep < 1) throw new hg.PluginError('INVALID_ARGUMENT', '分类 ID 不合法');
         const kind = raw.slice(0, sep);
         const value = fold(raw.slice(sep + 1));
-        const entries = await index(ctx);
-        let rows;
-        if (kind === 'a') rows = entries.filter(row => fold(row[2]) === value);
-        else if (kind === 't') rows = entries.filter(row => (row[3] || []).some(tag => fold(tag) === value));
-        else throw new hg.PluginError('INVALID_ARGUMENT', '未知的分类类型');
+        const { rows: entries, normed } = await index(ctx);
+        const rows = [];
+        for (let i = 0; i < entries.length; i++) {
+          const hit = kind === 'a' ? normed[i].nick === value : kind === 't' && normed[i].tags.includes(value);
+          if (hit) rows.push(entries[i]);
+        }
         return paged(rows, params.cursor, params.limit, toItem);
       },
     },
@@ -223,10 +240,10 @@ export default hg => {
       async search(params, ctx) {
         const query = norm(params.query).trim();
         if (!query) return { items: [], next: null };
-        const entries = await index(ctx);
-        const rows = searchIndex(entries, query);
-        const out = paged(rows, params.cursor, params.limit, toItem);
-        out.total = rows.length;
+        const { rows, normed } = await index(ctx);
+        const matched = searchAll(rows, normed, query);
+        const out = paged(matched, params.cursor, params.limit, toItem);
+        out.total = matched.length;
         return out;
       },
     },
@@ -235,7 +252,7 @@ export default hg => {
       async getDetail(params, ctx) {
         const id = norm(params.id);
         if (!ID_RE.test(id)) throw new hg.PluginError('INVALID_ARGUMENT', '作品 ID 不合法');
-        const entries = await index(ctx);
+        const { rows: entries } = await index(ctx);
         const row = byId(entries, id);
         if (!row) throw new hg.PluginError('NOT_FOUND', '作品不存在');
         const detail = toItem(row);
