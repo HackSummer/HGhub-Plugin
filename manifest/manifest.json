@@ -22,6 +22,13 @@
       "version": "1.0.0",
       "description": "321AV：首页分区、三分类、搜索、详情与 HLS 多线路直连",
       "url": "../plugins/av321.source.js"
+    },
+    {
+      "id": "hanime16.source",
+      "name": "H動漫 hanime16",
+      "version": "1.0.0",
+      "description": "hanime16：首页分区、类型与排序、搜索、详情，直连 1080P/720P/480P",
+      "url": "../plugins/hanime16.source.js"
     }
   ]
 }
