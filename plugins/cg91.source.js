@@ -1,10 +1,10 @@
 export const meta = {
   id: 'cg91.source',
   name: '91吃瓜',
-  version: '1.0.0',
+  version: '1.0.1',
   protocol: 1,
   kind: 'source',
-  description: '91吃瓜网（91cg1.com）：二十五分类分页、搜索、详情多段视频；正文封面是 AES-128-CBC 密文，插件内解密成 data URL；播放走 DPlayer 配置里的 HLS 直链。',
+  description: '91吃瓜网（91cg1.com）：二十五分类分页、搜索、详情多段视频；正文封面是 AES-128-CBC 密文，交给宿主原生 transform 解密；播放走 DPlayer 配置里的 HLS 直链。',
   mature: true,
   linkDomains: ['91cg1.com', 'www.91cg1.com', 'pic.biacea.cn', 'op.micgqv.cn', 'qw.mkimfs.cn'],
   timeouts: { read: 25, playback: 30 },
@@ -13,8 +13,20 @@ export const meta = {
 const SITE = 'https://www.91cg1.com';
 
 // 封面密文参数：从主题的 zzz.js 字符串表里解出来的 AES-128-CBC key/iv
-const PIC_KEY = 'f5d965df75336270';
-const PIC_IV = '97b60394abc2fbe1';
+// 以 Base64 形式交给宿主的原生 transform，宿主逐个封面解密，不占插件运行时
+const PIC_KEY_B64 = 'ZjVkOTY1ZGY3NTMzNjI3MA==';   // 'f5d965df75336270'
+const PIC_IV_B64 = 'OTdiNjAzOTRhYmMyZmJlMQ==';    // '97b60394abc2fbe1'
+
+// 封面是密文，返回 ResourceRef 让宿主原生解密（data URL 会被宿主判成无效地址）
+function coverRef(rawUrl) {
+  const url = typeof rawUrl === 'string' ? rawUrl : '';
+  if (!/^https?:\/\//i.test(url)) return '';
+  if (!/\.(jpe?g|png|webp|gif)$/i.test(url)) return '';
+  return {
+    url: url.replace(/^http:\/\//i, 'https://'),
+    transform: { type: 'aes-cbc', key: PIC_KEY_B64, iv: PIC_IV_B64, padding: 'pkcs7' },
+  };
+}
 
 const CATS = [
   { slug: 'zxcghl', label: '今日吃瓜' },
@@ -61,12 +73,6 @@ const pageNo = cursor => {
   return Number.isInteger(n) && n > 0 ? n : 1;
 };
 
-function bytesOf(text) {
-  const out = new Uint8Array(text.length);
-  for (let i = 0; i < text.length; i++) out[i] = text.charCodeAt(i) & 0xff;
-  return out;
-}
-
 export default hg => {
   // 同族站点（如 91cg2.com 入口页）会把整页 HTML 塞进 document.write(Base64.decode('…'))
   function unwrapShell(html) {
@@ -101,35 +107,6 @@ export default hg => {
     return doc;
   }
 
-  // 正文/封面图都是 AES-128-CBC 密文，解出来当 data URL 用
-  async function coverDataUrl(rawUrl, ctx) {
-    const url = norm(rawUrl);
-    if (!/^https?:\/\//i.test(url)) return '';
-    if (!/\.(jpe?g|png|webp|gif)$/i.test(url)) return '';
-    try {
-      const res = await hg.http.fetch({
-        url,
-        responseType: 'bytes',
-        headers: { Accept: 'image/*' },
-        signal: ctx.signal,
-        maxBytes: 1048576,
-      });
-      if (!res.ok || !res.data || !res.data.length) return '';
-      const bytes = res.data;
-      const out = hg.crypto.aesDecrypt(
-        { mode: 'cbc', key: bytesOf(PIC_KEY), iv: bytesOf(PIC_IV) },
-        bytes,
-      );
-      if (!out || out.length < 1024) return '';
-      if (out[0] !== 0xff || out[1] !== 0xd8) return '';
-      const ext = /\.png$/i.test(url) ? 'png' : 'jpeg';
-      return `data:image/${ext};base64,${hg.codec.base64Encode(out)}`;
-    } catch (error) {
-      hg.log.warn('封面解密失败，跳过');
-      return '';
-    }
-  }
-
   function cardsOf(root) {
     const out = [];
     const seen = new Set();
@@ -141,6 +118,9 @@ export default hg => {
       if (!title) continue;
       seen.add(m[1]);
       const item = { id: m[1], title, type: 'movie' };
+      const banner = card.html().match(/loadBannerDirect\(\s*'([^']+)'/);
+      const cover = coverRef(banner ? banner[1] : '');
+      if (cover) item.cover = cover;
       const badge = card.first('span.wraps');
       const badgeText = trim(badge && badge.text());
       if (badgeText && badgeText.length <= 8) item.badge = badgeText;
@@ -268,7 +248,7 @@ export default hg => {
           }
         }
         if (coverSource) {
-          const cover = await coverDataUrl(coverSource, ctx);
+          const cover = coverRef(coverSource);
           if (cover) detail.cover = cover;
         }
 

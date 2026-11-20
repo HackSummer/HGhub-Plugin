@@ -110,8 +110,8 @@
     {
       "id": "cg91.source",
       "name": "91吃瓜",
-      "version": "1.0.0",
-      "description": "91吃瓜网（91cg1.com）：二十五分类分页、搜索、详情多段视频；封面 AES-128-CBC 密文在插件内解密，播放走 DPlayer 配置里的 HLS 直链",
+      "version": "1.0.1",
+      "description": "91吃瓜网（91cg1.com）：二十五分类分页、搜索、详情多段视频；封面用 ResourceRef + 原生 aes-cbc transform 解密，播放走 DPlayer 配置里的 HLS 直链",
       "url": "../plugins/cg91.source.js"
     }
   ]

@@ -21,7 +21,7 @@ HGhub 客户端下载：<https://github.com/Minireel/HGhub/releases>
 | `appmovie.source` APP影院 | 首页 / 分类 / 搜索 / 详情 / 播放 | |
 | `auete.source` Auete影视 | 首页 / 分类 / 详情 / 播放 | 站内搜索需图形验证码，未提供搜索 |
 | `netflixgc.source` 奈飞工厂 | 首页 / 分类 / 搜索 / 详情 / 播放 | |
-| `cg91.source` 91吃瓜 | 首页 / 分类 / 搜索 / 详情 / 播放 | 成人内容，需在设置里开启；列表不显示封面 |
+| `cg91.source` 91吃瓜 | 首页 / 分类 / 搜索 / 详情 / 播放 | 成人内容，需在设置里开启 |
 
 ```
 manifest/manifest.json      插件列表，订阅入口
