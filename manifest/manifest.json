@@ -120,20 +120,6 @@
       "version": "1.0.0",
       "description": "591AV / PPP.Porn（591av.ws）：首页五个分区、三十三个分类的 from 翻页、搜索、详情与 HLS 直链；取流带 Referer，按地址时间戳声明有效期",
       "url": "../plugins/av591.source.js"
-    },
-    {
-      "id": "rou66.source",
-      "name": "肉視頻",
-      "version": "1.0.0",
-      "description": "肉視頻（rou66.net）：首页十一个分区、四十个标签分类与搜索分页、單片/劇集详情；播放走 /api/hls/{id} 跳转到 HLS 清单，坏节点自动换线重试，按 exp 声明有效期",
-      "url": "../plugins/rou66.source.js"
-    },
-    {
-      "id": "xojav.source",
-      "name": "XOJAV",
-      "version": "1.0.2",
-      "description": "XOJAV（xojav.cc）：首页推荐与四个热门分区、48 个分类分页、站内搜索分页、详情与 HLS 直链（cdnline 拼相对路径，取流带 Referer，按清单 EXTINF 汇总时长；主备双域名自动换线，CDN 卡连接换 cache-buster 重试）",
-      "url": "../plugins/xojav.source.js"
     }
   ]
 }
