@@ -113,6 +113,13 @@
       "version": "1.0.1",
       "description": "91吃瓜网（91cg1.com）：二十五分类分页、搜索、详情多段视频；封面用 ResourceRef + 原生 aes-cbc transform 解密，播放走 DPlayer 配置里的 HLS 直链",
       "url": "../plugins/cg91.source.js"
+    },
+    {
+      "id": "av591.source",
+      "name": "591AV",
+      "version": "1.0.0",
+      "description": "591AV / PPP.Porn（591av.ws）：首页五个分区、三十三个分类的 from 翻页、搜索、详情与 HLS 直链；取流带 Referer，按地址时间戳声明有效期",
+      "url": "../plugins/av591.source.js"
     }
   ]
 }
