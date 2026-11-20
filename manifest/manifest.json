@@ -106,6 +106,13 @@
       "version": "1.0.0",
       "description": "奈飞工厂（netflixgc.com）：首页与分类走站内 ds_api/vod 接口（POST 返回 JSON），搜索走 /vodsearch，播放页 player_aaaa 的 encrypt=2 用 base64+unescape 解开就是 m3u8",
       "url": "../plugins/netflixgc.source.js"
+    },
+    {
+      "id": "cg91.source",
+      "name": "91吃瓜",
+      "version": "1.0.0",
+      "description": "91吃瓜网（91cg1.com）：二十五分类分页、搜索、详情多段视频；封面 AES-128-CBC 密文在插件内解密，播放走 DPlayer 配置里的 HLS 直链",
+      "url": "../plugins/cg91.source.js"
     }
   ]
 }
