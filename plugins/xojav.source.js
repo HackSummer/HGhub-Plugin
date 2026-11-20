@@ -1,7 +1,7 @@
 export const meta = {
   id: 'xojav.source',
   name: 'XOJAV',
-  version: '1.0.0',
+  version: '1.0.1',
   protocol: 1,
   kind: 'source',
   description: 'XOJAV（xojav.cc）：首页推荐 + 四个热门分区，48 个分类分页，站内搜索分页，详情与 HLS 直链（cdnline 拼相对路径，带 Referer 取流）。',
@@ -105,6 +105,7 @@ export default hg => {
         url,
         headers: { 'User-Agent': UA, Referer: `${SITE}/` },
         signal: ctx.signal,
+        timeoutMs: 8000,
         maxBytes: 2 * 1024 * 1024,
       });
       return { res };
@@ -241,31 +242,31 @@ export default hg => {
 
         let lastStatus = 0;
         for (const url of urls) {
-          const probe = await probeMedia(url, ctx);
-          if (!probe.res) continue;
-          if (!probe.res.ok) {
-            lastStatus = probe.res.status;
-            continue;
+          for (let round = 0; round < 3; round += 1) {
+            const sep = url.indexOf('?') === -1 ? '?' : '&';
+            const target = round === 0 ? url : `${url}${sep}r=${Math.floor(Math.random() * 900000) + 100000}`;
+            const probe = await probeMedia(target, ctx);
+            if (!probe.res) continue;
+            const body = norm(probe.res.data);
+            if (!probe.res.ok || body.indexOf('#EXTM3U') !== 0) {
+              lastStatus = probe.res.status;
+              continue;
+            }
+            const info = {
+              streams: [{
+                url: probe.res.url || target,
+                kind: 'media',
+                format: 'hls',
+                headers: { Referer: `${SITE}/` },
+              }],
+            };
+            let total = 0;
+            const re = /#EXTINF:\s*([\d.]+)/g;
+            let m;
+            while ((m = re.exec(body))) total += Number(m[1]) || 0;
+            if (total > 1) info.durationSec = Math.round(total);
+            return info;
           }
-          const body = norm(probe.res.data);
-          if (body.indexOf('#EXTM3U') !== 0) {
-            lastStatus = probe.res.status;
-            continue;
-          }
-          const info = {
-            streams: [{
-              url: probe.res.url || url,
-              kind: 'media',
-              format: 'hls',
-              headers: { Referer: `${SITE}/` },
-            }],
-          };
-          let total = 0;
-          const re = /#EXTINF:\s*([\d.]+)/g;
-          let m;
-          while ((m = re.exec(body))) total += Number(m[1]) || 0;
-          if (total > 1) info.durationSec = Math.round(total);
-          return info;
         }
         throw new hg.PluginError(
           'CONTENT_LOCKED',
