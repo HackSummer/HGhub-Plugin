@@ -1,16 +1,17 @@
 export const meta = {
   id: 'xojav.source',
   name: 'XOJAV',
-  version: '1.0.1',
+  version: '1.0.2',
   protocol: 1,
   kind: 'source',
-  description: 'XOJAV（xojav.cc）：首页推荐 + 四个热门分区，48 个分类分页，站内搜索分页，详情与 HLS 直链（cdnline 拼相对路径，带 Referer 取流）。',
+  description: 'XOJAV（xojav.cc）：首页推荐 + 四个热门分区，48 个分类分页，站内搜索分页，详情与 HLS 直链（cdnline 拼相对路径，带 Referer 取流；主备双域名自动换线，CDN 卡连接换 cache-buster 重试）。',
   mature: true,
   linkDomains: ['xojav.cc', 'www.xojav.cc', 'fgds54gg.sxtmo.com'],
   timeouts: { read: 20, playback: 30 },
 };
 
 const SITE = 'https://xojav.cc';
+const HOSTS = ['https://xojav.cc', 'https://www.xojav.cc'];
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
 
 const TAG_LIMIT = 48;
@@ -29,22 +30,45 @@ const pageNo = cursor => {
 };
 
 export default hg => {
+  let hostIndex = 0;
+
   async function fetchText(path, ctx, ttl) {
-    const url = path.startsWith('http') ? path : `${SITE}${path}`;
-    const res = await hg.http.fetch({
-      url,
-      headers: {
-        'User-Agent': UA,
-        Accept: 'text/html,application/xhtml+xml',
-        Referer: `${SITE}/`,
-      },
-      retry: 1,
-      signal: ctx.signal,
-      ...(ttl ? { cache: { ttlSec: ttl, staleIfErrorSec: 3600 } } : {}),
-    });
-    if (res.status === 404) throw new hg.PluginError('NOT_FOUND', '这个视频不存在或已下架');
-    if (!res.ok) throw new hg.PluginError('UPSTREAM_ERROR', `站点返回 ${res.status}`);
-    return norm(res.data);
+    const rel = path.startsWith('http') ? null : path;
+    let lastStatus = 0;
+    let lastError = null;
+    const tries = rel ? HOSTS.length : 1;
+    for (let i = 0; i < tries; i += 1) {
+      const host = HOSTS[(hostIndex + i) % HOSTS.length];
+      const url = rel ? `${host}${rel}` : path;
+      let res;
+      try {
+        res = await hg.http.fetch({
+          url,
+          headers: {
+            'User-Agent': UA,
+            Accept: 'text/html,application/xhtml+xml',
+            Referer: `${SITE}/`,
+          },
+          retry: 1,
+          timeoutMs: 15000,
+          signal: ctx.signal,
+          ...(ttl ? { cache: { ttlSec: ttl, staleIfErrorSec: 3600 } } : {}),
+        });
+      } catch (error) {
+        if (error && error.code === 'CANCELLED') throw error;
+        lastError = error;
+        continue;
+      }
+      if (res.ok) {
+        if (rel) hostIndex = (hostIndex + i) % HOSTS.length;
+        return norm(res.data);
+      }
+      lastStatus = res.status;
+      if (res.status === 404) throw new hg.PluginError('NOT_FOUND', '这个视频不存在或已下架');
+      if (res.status === 429) throw new hg.PluginError('RATE_LIMITED', '站点限流，稍后再试', { retryAfterSec: 20 });
+    }
+    if (lastStatus) throw new hg.PluginError('UPSTREAM_ERROR', `站点返回 ${lastStatus}（已换线重试）`);
+    throw new hg.PluginError('NETWORK', (lastError && lastError.message) || '网络请求失败，稍后重试');
   }
 
   async function fetchDoc(path, ctx, ttl) {
@@ -105,7 +129,7 @@ export default hg => {
         url,
         headers: { 'User-Agent': UA, Referer: `${SITE}/` },
         signal: ctx.signal,
-        timeoutMs: 8000,
+        timeoutMs: 5500,
         maxBytes: 2 * 1024 * 1024,
       });
       return { res };
@@ -179,7 +203,8 @@ export default hg => {
         const doc = await fetchDoc(`/video/${id}/`, ctx, 120);
 
         const h1 = doc.first('h1');
-        let title = trim(h1 && h1.text());
+        if (!h1) throw new hg.PluginError('NOT_FOUND', '这个视频不存在或已下架');
+        let title = trim(h1.text());
         if (!title) {
           const og = doc.first('meta[property="og:title"]');
           title = trim(og && og.attr('content')).replace(/\s+-\s+xojav$/i, '');
@@ -275,7 +300,7 @@ export default hg => {
       },
 
       async matchUrl(params) {
-        const m = norm(params.url).match(/^https?:\/\/(?:www\.)?xojav\.cc\/video\/(\d+)\/?/i);
+        const m = norm(params.url).match(/^https?:\/\/(?:www\.)?xojav\.(?:cc|tv)\/video\/(\d+)\/?/i);
         if (!m) return null;
         return { mediaId: m[1] };
       },
