@@ -24,6 +24,7 @@ HGhub 客户端下载：<https://github.com/Minireel/HGhub/releases>
 | `cg91.source` 91吃瓜 | 首页 / 分类 / 搜索 / 详情 / 播放 | 成人内容，需在设置里开启 |
 | `av591.source` 591AV | 首页 / 分类 / 搜索 / 详情 / 播放 | 成人内容，需在设置里开启 |
 | `rou66.source` 肉視頻 | 首页 / 分类 / 搜索 / 详情 / 播放 | 成人内容，需在设置里开启；CDN 偶发 502，重试即可 |
+| `xojav.source` XOJAV | 首页 / 分类 / 搜索 / 详情 / 播放 | 成人内容，需在设置里开启；用 xojav.cc 镜像，主站 xojav.tv 有 Cloudflare 盾 |
 
 ```
 manifest/manifest.json      插件列表，订阅入口
@@ -45,6 +46,7 @@ plugins/netflixgc.source.js 单文件插件
 plugins/cg91.source.js      单文件插件
 plugins/av591.source.js     单文件插件
 plugins/rou66.source.js     单文件插件
+plugins/xojav.source.js     单文件插件
 ```
 
 ## 订阅
