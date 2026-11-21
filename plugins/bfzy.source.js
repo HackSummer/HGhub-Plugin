@@ -1,7 +1,7 @@
 export const meta = {
   id: 'bfzy.source',
   name: '暴风资源',
-  version: '1.0.0',
+  version: '1.0.1',
   protocol: 1,
   kind: 'source',
   description: '暴风资源采集接口单文件数据源：搜索、分类、详情与 m3u8 直连播放。',
@@ -29,12 +29,13 @@ function mediaType(row) {
   if (/电影|片/.test(name)) return 'movie';
   return 'other';
 }
+const HIDDEN_CATS = new Set(['51', '52', '53', '58']);
+
 const HOME_ROWS = [
   { id: '20', title: '电影' },
   { id: '30', title: '连续剧' },
   { id: '39', title: '动漫' },
   { id: '45', title: '综艺' },
-  { id: '58', title: '短剧' },
 ];
 
 const norm = s => (typeof s === 'string' ? s : '');
@@ -187,7 +188,7 @@ export default hg => {
       async getCategories(params, ctx) {
         const data = await call({ ac: 'list', pg: 1 }, ctx);
         if (!Array.isArray(data.class)) return HOME_ROWS.map(r => ({ id: r.id, label: r.title }));
-        const top = data.class.filter(c => Number(c.type_pid) === 0);
+        const top = data.class.filter(c => Number(c.type_pid) === 0 && !HIDDEN_CATS.has(String(c.type_id)));
         return top.map(c => {
           const kids = data.class.filter(k => Number(k.type_pid) === Number(c.type_id));
           const cat = { id: String(c.type_id), label: norm(c.type_name) };
@@ -199,6 +200,7 @@ export default hg => {
       async list(params, ctx) {
         const id = String(params.categoryId || '');
         if (!/^\d+$/.test(id)) throw new hg.PluginError('INVALID_ARGUMENT', '分类 ID 不合法');
+        if (HIDDEN_CATS.has(id)) throw new hg.PluginError('INVALID_ARGUMENT', '这个分类已隐藏');
         const data = await call({ ac: 'list', t: id, pg: cursorPage(params.cursor) }, ctx);
         return pageOf(data, toItem);
       },
