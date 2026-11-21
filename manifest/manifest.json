@@ -61,8 +61,8 @@
     {
       "id": "jisu.source",
       "name": "极速追剧",
-      "version": "1.0.0",
-      "description": "极速追剧（jisuzhuiju.com）：首页五个分区、五个频道分页、搜索、详情与多线路 HLS 直连",
+      "version": "1.0.1",
+      "description": "极速追剧（jisuzhuiju.com）：首页五个分区、四个频道分页、搜索、详情与多线路 HLS 直连；短剧频道源头单线且 CDN 已停用，暂不提供",
       "url": "../plugins/jisu.source.js"
     },
     {
