@@ -1,7 +1,7 @@
 export const meta = {
   id: 'appmovie.source',
   name: 'APP影院',
-  version: '1.0.0',
+  version: '1.0.1',
   protocol: 1,
   kind: 'source',
   description: 'APP影院（appmovie.art）：首页四个热映分区、八个频道分页、搜索、详情与多线路 m3u8 直连。',
@@ -73,6 +73,31 @@ export default hg => {
     return /^https?:\/\//i.test(url) ? url.replace(/^http:\/\//i, 'https://') : '';
   }
 
+  const PLACEHOLDER_RE = /(?:^|\/)(?:load(?:ing)?|blank|placeholder|spacer|lazy)[^\/]*\.(?:gif|png|jpe?g|webp)$/i;
+
+  function pickCover(anchor, img) {
+    const cands = [
+      anchor.attr('data-original'),
+      anchor.attr('data-src'),
+      anchor.attr('data-background'),
+      img && img.attr('data-original'),
+      img && img.attr('data-src'),
+      img && img.attr('src'),
+    ];
+    for (const cand of cands) {
+      const url = coverOf(cand);
+      if (!url || PLACEHOLDER_RE.test(url)) continue;
+      return url;
+    }
+    const style = norm(anchor.attr('style'));
+    const m = style.match(/url\((['"]?)([^'")]+)\1\)/i);
+    if (m) {
+      const url = coverOf(m[2]);
+      if (url && !PLACEHOLDER_RE.test(url)) return url;
+    }
+    return '';
+  }
+
   function cardsOf(root, fallbackType) {
     const out = [];
     const seen = new Set();
@@ -84,10 +109,11 @@ export default hg => {
       if (!title) continue;
       seen.add(m[1]);
       const item = { id: m[1], title, type: fallbackType || 'other' };
-      const cover = coverOf(img && (img.attr('data-original') || img.attr('data-src') || img.attr('src')));
+      const cover = pickCover(anchor, img);
       if (cover) item.cover = cover;
-      const remark = trim(anchor.parent() && anchor.parent().first('span.pic-text') && anchor.parent().first('span.pic-text').text());
-      if (remark && remark.length <= 8) item.badge = remark;
+      const badgeNode = anchor.first('span.pic-text') || (anchor.parent() && anchor.parent().first('span.pic-text'));
+      const remark = trim(badgeNode && badgeNode.text());
+      if (remark && remark.length <= 10) item.badge = remark;
       out.push(item);
     }
     return out;
@@ -181,8 +207,8 @@ export default hg => {
 
         const detail = { id, title, type: 'series', playlists: [] };
 
-        const img = doc.first('img[data-original]') || doc.first('img');
-        const cover = coverOf(img && (img.attr('data-original') || img.attr('src')));
+        const poster = doc.first('.stui-content__thumb a') || doc.first('img[data-original]') || doc.first('img');
+        const cover = poster ? pickCover(poster, poster.first('img') || poster) : '';
         if (cover) detail.cover = cover;
 
         const descBox = doc.first('div.stui-content__desc');
